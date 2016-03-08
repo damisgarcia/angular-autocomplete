@@ -120,7 +120,7 @@ select2 = ($filter)->
     $(element).select2 options
 
 
-angular.module 'angularSelect2', []
+angular.module 'angular.autocomplete', []
   .directive 'select2', select2
 
 select2.$inject = ['$filter']
