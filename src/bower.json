@@ -1,0 +1,25 @@
+{
+  "name": "angular-autocomplete",
+  "homepage": "https://github.com/damisgarcia/angular-autocomplete",
+  "authors": [
+    "damisgarcia <damisgarcia@gmail.com>"
+  ],
+  "description": "This module is a helper for users with wish use autocomplete with AngularJS and Bootstrap. ;)",
+  "main": "",
+  "moduleType": [],
+  "keywords": [
+    "angular",
+    "javascript",
+    "autocomplete",
+    "select2",
+    "materialize"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
