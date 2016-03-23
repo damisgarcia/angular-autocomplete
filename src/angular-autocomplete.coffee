@@ -2,7 +2,7 @@
 
 ###*
  # @ngdoc directive
- # @name angular-select2
+ # @name angular-autocomplete
  # @description
  #
 ###
@@ -14,7 +14,12 @@
 ###
 
 parseData = (result,params,scope,filter)->
-  filterResult = filter('filter')(result, params.term)
+  filterResult = []
+
+  if result instanceof Array
+    filterResult = filter('filter')(result, params.term)
+  else if result.hasOwnProperty("data")
+    filterResult = filter('filter')(result.data, params.term)
 
   data = $.map filterResult, (item)->
     response =
@@ -22,14 +27,7 @@ parseData = (result,params,scope,filter)->
       text: item[scope.text]
       $object: item
     #
-
-    unless scope.hasOwnProperty("subtitle")
-      scope.subtitle = "subtitle"
-      scope.subtitleLabel = scope.subtitle
-    #
-
-    response.subtitle = item[scope.subtitle]
-    response.subtitleLabel = scope.subtitle
+    response.subtitle = item[scope.subtitle] if scope.hasOwnProperty("subtitle")
     response.picture = item[scope.picture] if scope.hasOwnProperty("picture")
     response
   #...
@@ -39,7 +37,7 @@ parseData = (result,params,scope,filter)->
 setRemote = (url,scope,filter)->
   remote =
     url: url
-    dataType: 'json'
+    dataType: scope.dataType
     delay: 250
     data: (params) ->
       {
@@ -61,7 +59,7 @@ setRemote = (url,scope,filter)->
 # @public
 ###
 
-select2 = ($filter)->
+autocomplete = ($filter)->
   restrict: 'A'
   scope: {
     ngModel: '='
@@ -75,31 +73,27 @@ select2 = ($filter)->
     scope.select2.text = "text" unless scope.select2.hasOwnProperty("text")
 
     templateResult = (item)->
+      scope.item = item
+
       return item.text unless item.id
 
-      item.subtitleLabel = "" unless item.hasOwnProperty('subtitleLabel')
-
       if item.hasOwnProperty('subtitle') && !item.hasOwnProperty('picture')
-       return $("<p>#{item.text} <br> <small>#{item.subtitleLabel.toUpperCase()} #{item.subtitle}</small></p>")
+       return $("<p>#{item.text} <br> <small>#{item.subtitle.join(',')}</small></p>")
 
       else if item.hasOwnProperty('picture') && !item.hasOwnProperty('subtitle')
        return $("<img src='#{item.picture}' class='img-circle' width='45' style='display:inline;margin:0 15px;float:left;' /><p>#{item.text}</p>")
 
       else if item.hasOwnProperty('picture') && item.hasOwnProperty('subtitle')
-       return $("<img src='#{item.picture}' class='img-circle' width='45' style='display:inline;margin:0 15px;float:left' /> <p>#{item.text} <br> <small>#{item.subtitleLabel.toUpperCase()} #{item.subtitle}</small></p>")
+       return $("<img src='#{item.picture}' class='img-circle' width='45' style='display:inline;margin:0 15px;float:left' /> <p>#{item.text} <br> <small>#{item.subtitle}</small></p>")
 
       else
        return item.text
 
     #...
 
-    templateSelection = (item)->
-      scope.$object = item.$object
-      item.text
-    #...
-
-    element.on "select2:close", ->
-      scope.ngModel = scope.$object
+    element.on "select2:select", (response)->
+      console.log response
+      scope.ngModel = angular.copy(response.params.data.$object)
       scope.$apply()
 
     options = {}
@@ -113,14 +107,31 @@ select2 = ($filter)->
 
     options.theme = scope.select2.theme if scope.select2.hasOwnProperty("theme")
     options.language = scope.select2.language if scope.select2.hasOwnProperty("language")
+    options.dataType = scope.select2.dataType if scope.select2.hasOwnProperty("dataType")
+    options.minimumInputLength = scope.select2.minimumInputLength if scope.select2.hasOwnProperty("minimumInputLength")
     options.placeholder = attrs.placeholder if attrs.hasOwnProperty("placeholder")
     options.templateResult = templateResult
-    options.templateSelection = templateSelection
 
     $(element).select2 options
 
 
+
+
 angular.module 'angular.autocomplete', []
-  .directive 'select2', select2
+  .directive('autocomplete', autocomplete)
 
 select2.$inject = ['$filter']
+
+# .directive('select2Options', select2_options)
+
+# select2_options = ->
+#   restrict: 'A'
+#   require: '^select2'
+#   scope:
+#     value: '='
+#   link: (scope, element, attrs,ctrls) ->
+#     element.bind 'change', ->
+#       select2.ngModel = scope.value
+
+
+# select2Ctrl.$inject = ["$scope"]
